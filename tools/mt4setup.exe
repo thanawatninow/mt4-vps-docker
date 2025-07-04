@@ -1,0 +1,40 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y curl tar unzip sudo net-tools xrdp xfce4 software-properties-common && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
+RUN dpkg --add-architecture i386 && \
+    mkdir -pm755 /etc/apt/keyrings && \
+    curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | tee /etc/apt/keyrings/winehq-archive.key && \
+    curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/focal/winehq-focal.sources | tee /etc/apt/sources.list.d/winehq.sources && \
+    apt-get update && \
+    apt-get install -y --install-recommends winehq-stable
+
+RUN useradd -m forex && echo "forex:forex" | chpasswd && adduser forex sudo 
+RUN echo "xfce4-session" > /home/forex/.xsession && \
+    chown forex:forex /home/forex/.xsession
+
+
+RUN mkdir -p /home/forex/mt4
+COPY tools/mt4setup.exe /home/forex/mt4/mt4setup.exe
+RUN chown -R forex:forex /home/forex/mt4
+
+
+COPY tools/ngrok-v3.tgz /tmp/ngrok-v3.tgz
+RUN tar -xvzf /tmp/ngrok-v3.tgz -C /usr/local/bin && chmod +x /usr/local/bin/ngrok
+
+
+ENV NGROK_AUTH_TOKEN=YOUR_TOKEN_HERE
+
+
+EXPOSE 3389
+
+
+CMD ngrok authtoken $NGROK_AUTH_TOKEN && \
+    ngrok tcp 3389 & \
+    sudo -u forex wine /home/forex/mt4/mt4setup.exe && \
+    /usr/sbin/xrdp -n
