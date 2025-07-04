@@ -28,7 +28,7 @@ COPY tools/ngrok-v3.tgz /tmp/ngrok-v3.tgz
 RUN tar -xvzf /tmp/ngrok-v3.tgz -C /usr/local/bin && chmod +x /usr/local/bin/ngrok
 
 
-ENV NGROK_AUTH_TOKEN=YOUR_TOKEN_HERE
+ENV NGROK_AUTH_TOKEN=2zQ0HkrzRDZkO1TUOgwRBlNjPVv_745AJuP3sAVAw1M2XQEGo
 
 
 EXPOSE 3389
